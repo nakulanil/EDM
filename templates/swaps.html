@@ -1,0 +1,711 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swap Requests — Exam Duty System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+        }
+
+        /* ── Navbar ── */
+        .navbar {
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            padding: 14px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+        .navbar .brand { color: white; font-size: 17px; font-weight: 700; }
+        .navbar .back-link {
+            color: rgba(255,255,255,0.85);
+            font-size: 13px;
+            text-decoration: none;
+            padding: 7px 16px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 6px;
+            background: rgba(255,255,255,0.1);
+            transition: background 0.2s;
+        }
+        .navbar .back-link:hover { background: rgba(255,255,255,0.2); }
+
+        /* ── Main ── */
+        .main {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .page-title { font-size: 22px; font-weight: 800; color: #1a1a2e; margin-bottom: 4px; }
+        .page-sub   { font-size: 13px; color: #888; margin-bottom: 24px; }
+
+        /* ── Alert Messages ── */
+        .alert-msg {
+            padding: 11px 15px;
+            margin-bottom: 14px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .alert-error   { background: #ffebee; color: #c62828; border-left: 4px solid #ef5350; }
+        .alert-success { background: #e8f5e9; color: #2e7d32; border-left: 4px solid #66bb6a; }
+
+        /* ── Deadline Banner ── */
+        .deadline-banner {
+            background: #fff8e1;
+            border-left: 4px solid #f9a825;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-size: 13px;
+            color: #795548;
+            margin-bottom: 20px;
+        }
+
+        /* ── Tabs ── */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: white;
+            border-radius: 12px;
+            padding: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            margin-bottom: 20px;
+            width: fit-content;
+        }
+        .tab-btn {
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            font-weight: 600;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .tab-btn:hover { color: #1a73e8; background: #f0f4ff; }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            color: white;
+        }
+        .tab-badge {
+            background: #ff4444;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+        }
+        .tab-btn.active .tab-badge { background: rgba(255,255,255,0.3); }
+
+        /* ── Tab Panels ── */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ── Cards ── */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+        .card-header {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ── Swap Item ── */
+        .swap-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid #f5f5f5;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .swap-item:last-child { border-bottom: none; }
+
+        .swap-info { flex: 1; min-width: 200px; }
+        .swap-person {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 6px;
+        }
+        .swap-slots {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .swap-slot-box {
+            background: #f5f7ff;
+            border: 1px solid #e0e7ff;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 12px;
+            color: #3949ab;
+        }
+        .swap-slot-box .shift-label {
+            font-weight: 700;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .swap-slot-box .date-label { color: #888; }
+        .swap-arrow {
+            font-size: 16px;
+            color: #1a73e8;
+            font-weight: 700;
+        }
+
+        .swap-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+        /* ── Status Badge ── */
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-pending  { background: #fff8e1; color: #f57f17; }
+        .badge-accepted { background: #e8f5e9; color: #2e7d32; }
+        .badge-approved { background: #e3f2fd; color: #1565c0; }
+        .badge-rejected { background: #ffebee; color: #c62828; }
+        .badge-cancelled{ background: #f5f5f5; color: #888; }
+
+        /* ── Buttons ── */
+        .btn {
+            padding: 7px 14px;
+            border-radius: 6px;
+            border: none;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn-accept { background: #e8f5e9; color: #2e7d32; }
+        .btn-reject { background: #ffebee; color: #c62828; }
+        .btn-cancel-swap { background: #f5f5f5; color: #888; }
+        .btn-primary {
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            color: white;
+            padding: 10px 22px;
+            font-size: 13px;
+        }
+
+        /* ── Empty State ── */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #bbb;
+            font-size: 13px;
+        }
+        .empty-icon { font-size: 36px; margin-bottom: 10px; }
+
+        /* ── Request Form ── */
+        .request-form-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            margin-bottom: 20px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #444;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #1a1a2e;
+            background: #fafafa;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+        .form-group select:focus {
+            border-color: #1a73e8;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
+        }
+
+        /* ── Bookings Grid (for picking target) ── */
+        .bookings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 16px;
+            max-height: 340px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .booking-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .booking-option:hover { border-color: #1a73e8; background: #f0f4ff; }
+        .booking-option.selected { border-color: #1a73e8; background: #e8f0fe; }
+        .booking-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0; height: 0;
+        }
+        .booking-option .teacher-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 4px;
+        }
+        .booking-option .booking-detail {
+            font-size: 11px;
+            color: #888;
+        }
+        .booking-option .shift-pill {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .morning-pill { background: #fff8e1; color: #f57f17; }
+        .evening-pill { background: #e8eaf6; color: #3949ab; }
+
+        /* ── No session ── */
+        .no-session-card {
+            background: white;
+            border-radius: 12px;
+            padding: 50px 30px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            color: #888;
+        }
+        .no-session-card .icon { font-size: 48px; margin-bottom: 16px; }
+
+        @media (max-width: 640px) {
+            .form-row { grid-template-columns: 1fr; }
+            .tabs { width: 100%; }
+            .tab-btn { flex: 1; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <span class="brand">🔄 Swap Requests</span>
+    <a href="{% url 'dashboard' %}" class="back-link">← Back to Dashboard</a>
+</nav>
+
+<div class="main">
+
+    <div class="page-title">🔄 Duty Swap Requests</div>
+    <div class="page-sub">Request to swap your booked exam duty slots with other teachers.</div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert-msg {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if deadline_passed %}
+    <div class="deadline-banner">
+        ⚠️ The booking deadline has passed. You can no longer request new swaps.
+    </div>
+    {% endif %}
+
+    {% if not active_session %}
+    <div class="no-session-card">
+        <div class="icon">🕐</div>
+        <h4 style="color:#555; margin-bottom:8px;">No Active Session</h4>
+        <p>Swap requests are only available during an active exam session.</p>
+    </div>
+
+    {% else %}
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('incoming', this)">
+            📥 Incoming
+            {% if incoming %}
+                <span class="tab-badge">{{ incoming|length }}</span>
+            {% endif %}
+        </button>
+        <button class="tab-btn" onclick="switchTab('outgoing', this)">
+            📤 Outgoing
+            {% if outgoing %}
+                <span class="tab-badge">{{ outgoing|length }}</span>
+            {% endif %}
+        </button>
+        <button class="tab-btn" onclick="switchTab('request', this)">
+            ➕ New Request
+        </button>
+        <button class="tab-btn" onclick="switchTab('history', this)">
+            🕓 History
+        </button>
+    </div>
+
+    <!-- ── Incoming Tab ── -->
+    <div class="tab-panel active" id="tab-incoming">
+        <div class="card">
+            <div class="card-header">📥 Incoming Swap Requests</div>
+
+            {% if incoming %}
+                {% for swap in incoming %}
+                <div class="swap-item">
+                    <div class="swap-info">
+                        <div class="swap-person">From: {{ swap.requester.full_name }}
+                            {% if swap.requester.department %}
+                                <span style="color:#888; font-weight:400; font-size:11px;">
+                                    — {{ swap.requester.department.name }}
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="swap-slots">
+                            <div class="swap-slot-box">
+                                <span class="shift-label">Their slot</span>
+                                <span class="date-label">
+                                    {% if swap.requester_booking.slot.shift == 'Morning' %}🌅{% else %}🌆{% endif %}
+                                    {{ swap.requester_booking.slot.shift }} · {{ swap.requester_booking.slot.exam_date.date }}
+                                </span>
+                            </div>
+                            <span class="swap-arrow">⇄</span>
+                            <div class="swap-slot-box" style="background:#fff8f0; border-color:#ffe0cc;">
+                                <span class="shift-label" style="color:#e65100;">Your slot</span>
+                                <span class="date-label">
+                                    {% if swap.target_booking.slot.shift == 'Morning' %}🌅{% else %}🌆{% endif %}
+                                    {{ swap.target_booking.slot.shift }} · {{ swap.target_booking.slot.exam_date.date }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% if not deadline_passed %}
+                    <div class="swap-actions">
+                        <a href="{% url 'respond_swap' swap.id 'accept' %}" class="btn btn-accept">✓ Accept</a>
+                        <a href="{% url 'respond_swap' swap.id 'reject' %}" class="btn btn-reject">✗ Reject</a>
+                    </div>
+                    {% else %}
+                    <span class="status-badge badge-pending">Deadline Passed</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <div>No incoming swap requests.</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ── Outgoing Tab ── -->
+    <div class="tab-panel" id="tab-outgoing">
+        <div class="card">
+            <div class="card-header">📤 My Outgoing Requests</div>
+
+            {% if outgoing %}
+                {% for swap in outgoing %}
+                <div class="swap-item">
+                    <div class="swap-info">
+                        <div class="swap-person">To: {{ swap.target.full_name }}
+                            {% if swap.target.department %}
+                                <span style="color:#888; font-weight:400; font-size:11px;">
+                                    — {{ swap.target.department.name }}
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="swap-slots">
+                            <div class="swap-slot-box" style="background:#fff8f0; border-color:#ffe0cc;">
+                                <span class="shift-label" style="color:#e65100;">My slot</span>
+                                <span class="date-label">
+                                    {% if swap.requester_booking.slot.shift == 'Morning' %}🌅{% else %}🌆{% endif %}
+                                    {{ swap.requester_booking.slot.shift }} · {{ swap.requester_booking.slot.exam_date.date }}
+                                </span>
+                            </div>
+                            <span class="swap-arrow">⇄</span>
+                            <div class="swap-slot-box">
+                                <span class="shift-label">Their slot</span>
+                                <span class="date-label">
+                                    {% if swap.target_booking.slot.shift == 'Morning' %}🌅{% else %}🌆{% endif %}
+                                    {{ swap.target_booking.slot.shift }} · {{ swap.target_booking.slot.exam_date.date }}
+                                </span>
+                            </div>
+                        </div>
+                        <div style="margin-top:8px;">
+                            <span class="status-badge badge-{{ swap.status }}">
+                                {% if swap.status == 'pending' %}⏳ Waiting for response
+                                {% elif swap.status == 'accepted' %}✅ Accepted — awaiting admin approval
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="swap-actions">
+                        <a href="{% url 'cancel_swap' swap.id %}" class="btn btn-cancel-swap">Cancel</a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <div>No outgoing swap requests.</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ── New Request Tab ── -->
+    <div class="tab-panel" id="tab-request">
+
+        {% if deadline_passed %}
+        <div class="card">
+            <div class="empty-state">
+                <div class="empty-icon">🔒</div>
+                <div>Booking deadline has passed. New swap requests are disabled.</div>
+            </div>
+        </div>
+
+        {% elif not my_bookings %}
+        <div class="card">
+            <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <div>You have no bookings in this session to offer for a swap.</div>
+            </div>
+        </div>
+
+        {% else %}
+        <div class="request-form-card">
+            <div class="card-header">➕ Request a New Swap</div>
+
+            <form method="POST" action="{% url 'request_swap' %}" id="swap-form">
+                {% csrf_token %}
+
+                <!-- Step 1: Pick my booking -->
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label>Step 1 — Which of your bookings do you want to swap away?</label>
+                    <select name="my_booking_id" id="my-booking-select" required onchange="filterTargets()">
+                        <option value="">— Select your booking —</option>
+                        {% for booking in my_bookings %}
+                        <option value="{{ booking.id }}"
+                                data-shift="{{ booking.slot.shift }}"
+                                data-date="{{ booking.slot.exam_date.date }}">
+                            {{ booking.slot.shift }} shift — {{ booking.slot.exam_date.date }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Step 2: Pick target booking -->
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label>Step 2 — Which slot do you want in return? Click to select.</label>
+
+                    <input type="hidden" name="target_booking_id" id="target-booking-input" required>
+
+                    {% if other_bookings %}
+                    <div class="bookings-grid" id="bookings-grid">
+                        {% for booking in other_bookings %}
+                        <div class="booking-option"
+                             data-booking-id="{{ booking.id }}"
+                             data-shift="{{ booking.slot.shift }}"
+                             onclick="selectTarget(this, '{{ booking.id }}')">
+                            <span class="shift-pill {% if booking.slot.shift == 'Morning' %}morning-pill{% else %}evening-pill{% endif %}">
+                                {% if booking.slot.shift == 'Morning' %}🌅{% else %}🌆{% endif %}
+                                {{ booking.slot.shift }}
+                            </span>
+                            <div class="teacher-name">{{ booking.teacher.full_name }}</div>
+                            <div class="booking-detail">
+                                {% if booking.teacher.department %}{{ booking.teacher.department.name }}<br>{% endif %}
+                                📅 {{ booking.slot.exam_date.date }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state" style="padding:20px;">
+                        <div class="empty-icon">🤷</div>
+                        <div>No other bookings available to swap with.</div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Selected summary -->
+                <div id="swap-summary" style="display:none; background:#e8f0fe; border-radius:10px; padding:14px; margin-bottom:16px; font-size:13px; color:#1a1a2e;">
+                    <strong>📋 Swap Summary:</strong><br>
+                    <span id="summary-text"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="submit-btn" disabled>
+                    🔄 Send Swap Request
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ── History Tab ── -->
+    <div class="tab-panel" id="tab-history">
+        <div class="card">
+            <div class="card-header">🕓 Recent History (last 10)</div>
+
+            {% if history %}
+                {% for swap in history %}
+                <div class="swap-item">
+                    <div class="swap-info">
+                        <div class="swap-person">
+                            {% if swap.requester == teacher %}
+                                You → {{ swap.target.full_name }}
+                            {% else %}
+                                {{ swap.requester.full_name }} → You
+                            {% endif %}
+                        </div>
+                        <div class="swap-slots">
+                            <div class="swap-slot-box">
+                                <span class="shift-label">{{ swap.requester.full_name }}'s slot</span>
+                                <span class="date-label">
+                                    {{ swap.requester_booking.slot.shift }} · {{ swap.requester_booking.slot.exam_date.date }}
+                                </span>
+                            </div>
+                            <span class="swap-arrow">⇄</span>
+                            <div class="swap-slot-box">
+                                <span class="shift-label">{{ swap.target.full_name }}'s slot</span>
+                                <span class="date-label">
+                                    {{ swap.target_booking.slot.shift }} · {{ swap.target_booking.slot.exam_date.date }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="status-badge badge-{{ swap.status }}">
+                        {% if swap.status == 'approved' %}✅ Approved
+                        {% elif swap.status == 'rejected' %}❌ Rejected
+                        {% elif swap.status == 'cancelled' %}🚫 Cancelled
+                        {% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">🕓</div>
+                    <div>No swap history yet.</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% endif %} <!-- end active_session -->
+
+</div>
+
+<script>
+// ── Tab switching ──
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+}
+
+// ── Select target booking ──
+let selectedTargetId = null;
+let selectedTargetShift = null;
+let selectedTargetDate = null;
+
+function selectTarget(el, bookingId) {
+    document.querySelectorAll('.booking-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedTargetId = bookingId;
+    selectedTargetShift = el.dataset.shift;
+    selectedTargetDate = el.querySelector('.booking-detail').textContent.trim();
+    document.getElementById('target-booking-input').value = bookingId;
+    updateSummary();
+    checkSubmit();
+}
+
+// ── Filter targets (optional — could filter by different date) ──
+function filterTargets() {
+    checkSubmit();
+    updateSummary();
+}
+
+function updateSummary() {
+    const mySelect = document.getElementById('my-booking-select');
+    const summary  = document.getElementById('swap-summary');
+    const text     = document.getElementById('summary-text');
+
+    if (mySelect.value && selectedTargetId) {
+        const myOpt = mySelect.options[mySelect.selectedIndex];
+        summary.style.display = 'block';
+        text.textContent =
+            `Your "${myOpt.dataset.shift} on ${myOpt.dataset.date}" ` +
+            `⇄ Their "${selectedTargetShift} slot"`;
+    } else {
+        summary.style.display = 'none';
+    }
+}
+
+function checkSubmit() {
+    const mySelect = document.getElementById('my-booking-select');
+    const btn = document.getElementById('submit-btn');
+    if (btn) {
+        btn.disabled = !(mySelect && mySelect.value && selectedTargetId);
+    }
+}
+
+// ── Auto-open tab from URL hash ──
+window.addEventListener('load', () => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash) {
+        const btn = document.querySelector(`[onclick="switchTab('${hash}', this)"]`);
+        if (btn) btn.click();
+    }
+});
+</script>
+
+</body>
+</html>

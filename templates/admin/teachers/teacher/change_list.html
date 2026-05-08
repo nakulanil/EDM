@@ -1,0 +1,20 @@
+{% extends "admin/change_list.html" %}
+{% block object-tools-items %}
+    <li>
+        <a href="/admin/teachers/teacher/bulk-upload/" class="button">
+            📤 Bulk Upload Teachers
+        </a>
+        
+    </li>
+    <li>
+    <a href="{{ unavailability_upload_url }}" class="button">
+        Upload Unavailability
+    </a>
+    </li>
+    <li>
+        <a href="/admin/teachers/teacher/download-csv/" class="button">
+            📥 Download Teachers CSV
+        </a>
+    </li>
+    {{ block.super }}
+{% endblock %}

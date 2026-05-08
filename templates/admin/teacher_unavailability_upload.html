@@ -1,0 +1,32 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Upload Teacher Unavailability{% endblock %}
+
+{% block content %}
+<h1>Upload Teacher Unavailability</h1>
+
+<p>Upload a CSV with the following columns:</p>
+
+<pre style="background:#f4f4f4; padding:10px;">
+faculty_id,date
+F001,2026-11-10
+F002,2026-11-11
+F003,2026-11-11
+</pre>
+
+<p style="color:#888; font-size:13px;">
+    ℹ️ Each row represents a date when the teacher is <strong>NOT available</strong>.<br>
+    📅 Date format: <strong>YYYY-MM-DD</strong><br>
+    🪪 <code>faculty_id</code> must match an existing teacher's Faculty ID.
+</p>
+
+<p style="color:red; font-size:13px;">
+    ⚠️ Use <code>faculty_id</code> — do NOT use <code>email</code> anymore.
+</p>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="csv_file" accept=".csv" required>
+    <br><br>
+    <input type="submit" value="Upload Unavailability" class="default">
+</form>
+{% endblock %}

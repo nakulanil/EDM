@@ -1,0 +1,42 @@
+{# templates/admin/index.html #}
+{# Extends the default admin index and injects a Reports shortcut card. #}
+{% extends "admin/index.html" %}
+
+{% block content %}
+{{ block.super }}
+
+<div style="
+    margin: 20px 0;
+    background: white;
+    border-radius: 10px;
+    padding: 20px 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-left: 4px solid #1a73e8;
+">
+    <div style="font-size: 40px;">📊</div>
+    <div style="flex: 1;">
+        <div style="font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px;">
+            Duty Reports
+        </div>
+        <div style="font-size: 13px; color: #888;">
+            Download PDF reports — by exam date or by teacher — for the active session.
+        </div>
+    </div>
+    <a href="/teachers/reports/"
+       style="
+           display: inline-block;
+           padding: 10px 22px;
+           background: linear-gradient(135deg, #1a73e8, #0d47a1);
+           color: white;
+           border-radius: 8px;
+           font-size: 14px;
+           font-weight: 600;
+           text-decoration: none;
+       ">
+        Open Reports →
+    </a>
+</div>
+{% endblock %}
