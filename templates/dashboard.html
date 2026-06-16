@@ -1,0 +1,851 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+ 
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+ 
+body {
+    background: #f0f4f8;
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+}
+ 
+/* ── Top Navbar ── */
+.top-navbar {
+    background: linear-gradient(135deg, #1a73e8, #0d47a1);
+    padding: 14px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    position: relative;
+    z-index: 100;
+}
+.top-navbar .brand {
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+.top-navbar .nav-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.nav-btn {
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.nav-btn:hover { opacity: 0.85; }
+.nav-btn-outline {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+.nav-btn-danger {
+    background: #dc3545;
+    color: white;
+}
+ 
+/* ── Bell Button ── */
+.bell-wrapper {
+    position: relative;
+}
+.bell-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    position: relative;
+}
+.bell-btn:hover { background: rgba(255,255,255,0.25); }
+ 
+.bell-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff4444;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid #0d47a1;
+    display: none;
+}
+.bell-badge.visible { display: flex; }
+ 
+/* ── Notification Dropdown Panel ── */
+.notif-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 360px;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    border: 1px solid #e8eaf0;
+    z-index: 999;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.notif-dropdown.open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+}
+ 
+.notif-dropdown-header {
+    padding: 14px 16px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #f0f0f0;
+}
+.notif-dropdown-header .title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+.mark-all-btn {
+    font-size: 11px;
+    color: #1a73e8;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    padding: 3px 6px;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+.mark-all-btn:hover { background: #e8f0fe; }
+ 
+.notif-list {
+    max-height: 340px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #e0e0e0 transparent;
+}
+.notif-list::-webkit-scrollbar { width: 4px; }
+.notif-list::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 4px; }
+ 
+.notif-item {
+    display: flex;
+    gap: 10px;
+    padding: 11px 16px;
+    border-bottom: 1px solid #f8f8f8;
+    transition: background 0.15s;
+    align-items: flex-start;
+}
+.notif-item:last-child { border-bottom: none; }
+.notif-item:hover { background: #f8f9ff; }
+ 
+.notif-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+.icon-booked        { background: #e8f5e9; }
+.icon-cancelled     { background: #ffebee; }
+.icon-auto_assigned { background: #fff8e1; }
+ 
+.notif-body { flex: 1; min-width: 0; }
+.notif-body .notif-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 2px;
+}
+.notif-body .notif-msg {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+    white-space: normal;
+    word-wrap: break-word;
+}
+.notif-body .notif-time {
+    font-size: 10px;
+    color: #bbb;
+    margin-top: 3px;
+}
+ 
+.unread-dot {
+    width: 7px;
+    height: 7px;
+    background: #1a73e8;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 6px;
+}
+ 
+.notif-empty {
+    text-align: center;
+    padding: 35px 20px;
+    color: #bbb;
+    font-size: 13px;
+}
+.notif-empty .notif-empty-icon { font-size: 30px; margin-bottom: 8px; }
+ 
+/* ── Main Content ── */
+.main-content {
+    padding: 25px 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+ 
+.welcome-bar { margin-bottom: 20px; }
+.welcome-bar h2 { font-size: 22px; color: #1a1a2e; font-weight: 700; }
+.welcome-bar p { font-size: 13px; color: #888; margin-top: 3px; }
+ 
+.alert-msg {
+    padding: 11px 15px;
+    margin: 8px 0;
+    border-radius: 8px;
+    font-size: 13px;
+}
+.alert-error   { background: #ffebee; color: #c62828; border-left: 4px solid #ef5350; }
+.alert-success { background: #e8f5e9; color: #2e7d32; border-left: 4px solid #66bb6a; }
+ 
+/* Stats */
+.stats-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.stat-box {
+    flex: 1;
+    background: white;
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+.stat-icon-blue   { background: #e3f2fd; }
+.stat-icon-green  { background: #e8f5e9; }
+.stat-icon-orange { background: #fff8e1; }
+.stat-text .stat-number { font-size: 24px; font-weight: 700; color: #1a1a2e; line-height: 1; }
+.stat-text .stat-label  { font-size: 12px; color: #888; margin-top: 3px; }
+ 
+/* Deadline Banner */
+.deadline-banner {
+    background: white;
+    border-left: 4px solid #1a73e8;
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    color: #333;
+}
+ 
+/* Layout */
+.dashboard-wrapper { display: flex; gap: 20px; align-items: flex-start; }
+.dashboard-left  { flex: 2; }
+.dashboard-right { flex: 1; min-width: 260px; }
+ 
+/* Cards */
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 15px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+ 
+/* Slot rows */
+.slot-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+.slot-row:last-child { border-bottom: none; }
+.slot-date  { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+.slot-meta  { font-size: 12px; color: #888; margin-top: 3px; }
+.slot-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 6px;
+}
+.badge-morning { background: #fff8e1; color: #f57f17; }
+.badge-evening { background: #e8eaf6; color: #3949ab; }
+ 
+/* Booking rows */
+.booking-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+.booking-row:last-child { border-bottom: none; }
+.booking-date  { font-size: 13px; font-weight: 600; color: #1a1a2e; }
+.booking-shift { font-size: 11px; color: #888; margin-top: 2px; }
+ 
+/* Buttons */
+.btn {
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: none;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.btn:hover { opacity: 0.85; }
+.btn-book   { background: linear-gradient(135deg, #1a73e8, #0d47a1); color: white; }
+.btn-cancel { background: #ffebee; color: #c62828; }
+.btn-closed { background: #f5f5f5; color: #aaa; cursor: not-allowed; font-size: 11px; }
+ 
+/* Empty state */
+.empty-state { text-align: center; padding: 30px 0; color: #bbb; font-size: 13px; }
+.empty-state .empty-icon { font-size: 32px; margin-bottom: 8px; }
+ 
+/* No session */
+.no-session { text-align: center; padding: 60px 30px; color: #888; }
+.no-session .no-session-icon { font-size: 48px; margin-bottom: 15px; }
+</style>
+
+{# Store URL patterns for use in JavaScript - avoids Django template tag in JS strings #}
+{% url 'book_slot' 999999 as book_slot_url_template %}
+{% url 'cancel_booking' 999999 as cancel_booking_url_template %}
+ 
+<!-- ── Top Navbar ── -->
+<div class="top-navbar">
+    <div class="brand">📋 Exam Duty System</div>
+    <div class="nav-actions">
+ 
+        <!-- 🔔 Bell Notification Button -->
+        <div class="bell-wrapper">
+            <button class="bell-btn" id="bell-btn" onclick="toggleNotifDropdown(event)" title="Notifications">
+                🔔
+                <span class="bell-badge {% if notifications %}visible{% endif %}" id="bell-badge">
+                    {{ notifications|length }}
+                </span>
+            </button>
+ 
+            <!-- Dropdown Panel -->
+            <div class="notif-dropdown" id="notif-dropdown">
+                <div class="notif-dropdown-header">
+                    <span class="title">🔔 Notifications</span>
+                    <button class="mark-all-btn" onclick="markAllRead()">Mark all read</button>
+                </div>
+                <div class="notif-list" id="notif-list">
+                    {% if notifications %}
+                        {% for notif in notifications %}
+                        <div class="notif-item" data-notif-id="{{ notif.id }}">
+                            <div class="notif-icon icon-{{ notif.activity }}">
+                                {% if notif.activity == 'booked' %}✅
+                                {% elif notif.activity == 'cancelled' %}❌
+                                {% elif notif.activity == 'auto_assigned' %}🤖
+                                {% endif %}
+                            </div>
+                            <div class="notif-body">
+                                <div class="notif-title">
+                                    {% if notif.activity == 'booked' %}Slot Booked
+                                    {% elif notif.activity == 'cancelled' %}Slot Cancelled
+                                    {% elif notif.activity == 'auto_assigned' %}Auto Assigned
+                                    {% endif %}
+                                </div>
+                                <div class="notif-msg" title="{{ notif.message }}">{{ notif.message }}</div>
+                                <div class="notif-time">{{ notif.created_at }}</div>
+                            </div>
+                            <div class="unread-dot"></div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="notif-empty" id="notif-empty">
+                            <div class="notif-empty-icon">🔕</div>
+                            <div>No new notifications</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- end bell -->
+
+        <a href="{% url 'swap_page' %}" class="nav-btn nav-btn-outline" style="position:relative;">
+            🔄 Swaps
+            {% if pending_swaps_count %}
+            <span style="
+                position:absolute; top:-5px; right:-5px;
+                background:#ff4444; color:white;
+                font-size:10px; font-weight:700;
+                min-width:18px; height:18px;
+                border-radius:9px;
+                display:flex; align-items:center; justify-content:center;
+                padding:0 4px; border:2px solid #0d47a1;
+            ">{{ pending_swaps_count }}</span>
+            {% endif %}
+        </a>
+ 
+        <a href="{% url 'change_password' %}" class="nav-btn nav-btn-outline">🔐 Change Password</a>
+        <form method="POST" action="{% url 'logout' %}" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" class="nav-btn nav-btn-danger">Logout</button>
+        </form>
+    </div>
+</div>
+ 
+<div class="main-content">
+ 
+    <!-- Welcome - FIX: use full_name instead of first_name + last_name (those can be blank) -->
+    <div class="welcome-bar">
+        <h2>👋 Welcome, {{ teacher.full_name }}</h2>
+        {% if teacher.deputy %}
+            <span style="background:#e65100; color:white; padding:3px 10px; border-radius:10px; font-size:12px; margin-left:10px;">⭐ Deputy Superintendent</span>
+        {% endif %}
+        <p>Here's your exam duty overview for the current session.</p>
+    </div>
+ 
+    <!-- Alert Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert-msg {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+ 
+    {% if active_session and active_session.status == 'active' %}
+ 
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-box">
+            <div class="stat-icon stat-icon-blue">📋</div>
+            <div class="stat-text">
+                <div class="stat-number" id="duties-count">{{ teacher.duties }}</div>
+                <div class="stat-label">Duties Remaining</div>
+            </div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-icon stat-icon-green">🎓</div>
+            <div class="stat-text">
+                <div class="stat-number">{{ active_session.name }}</div>
+                <div class="stat-label">Active Session</div>
+            </div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-icon stat-icon-orange">📌</div>
+            <div class="stat-text">
+                <div class="stat-number" id="bookings-count">{{ my_bookings|length }}</div>
+                <div class="stat-label">My Bookings</div>
+            </div>
+        </div>
+    </div>
+ 
+    <!-- Deadline Banner -->
+    {% if slots %}
+    <div class="deadline-banner">
+        ⏳ <strong>Booking Deadline:</strong>
+        &nbsp;{{ slots.0.exam_date.booking_deadline }}
+        &nbsp;|&nbsp;
+        Closes in: <strong><span id="global-countdown" style="color:#1a73e8;"></span></strong>
+    </div>
+    {% endif %}
+ 
+    <!-- Main Layout -->
+    <div class="dashboard-wrapper">
+ 
+        <!-- Left: Available Slots -->
+        <div class="dashboard-left">
+            <div class="card">
+                <div class="card-header">📋 Available Slots</div>
+                <div id="slots-container">
+                    {% for slot in slots %}
+                    <div class="slot-row" data-slot-id="{{ slot.id }}">
+                        <div>
+                            <div class="slot-date">
+                                <span class="slot-badge {% if slot.shift == 'Morning' %}badge-morning{% else %}badge-evening{% endif %}">
+                                    {{ slot.shift }}
+                                </span>
+                                {{ slot.exam_date.date }}
+                            </div>
+                            <div class="slot-meta">
+                                Seats Left: <span class="seats-left">{{ slot.seats_left }}</span>
+                                {% if not slot.booking_closed %}
+                                    &nbsp;|&nbsp;<span class="time-remaining" data-seconds="{{ slot.time_remaining_seconds }}"></span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <span class="action-btn">
+                            {% if slot.booking_closed %}
+                                <button class="btn btn-closed" disabled>Closed</button>
+                            {% elif slot.already_booked %}
+                                <button class="btn btn-closed" disabled>✓ Booked</button>
+                            {% elif slot.seats_left == 0 %}
+                                <button class="btn btn-closed" disabled>Full</button>
+                            {% elif teacher.duties <= 0 %}
+                                <button class="btn btn-closed" disabled>No Duties</button>
+                            {% else %}
+                                <a href="{% url 'book_slot' slot.id %}">
+                                    <button class="btn btn-book">Book Slot</button>
+                                </a>
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <div>No slots available for this session.</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+ 
+        <!-- Right: My Bookings -->
+        <div class="dashboard-right">
+            <div class="card">
+                <div class="card-header">📌 My Bookings</div>
+                <div id="bookings-container">
+                    {% for booking in my_bookings %}
+                    <div class="booking-row" data-booking-id="{{ booking.id }}">
+                        <div>
+                            <div class="booking-date">{{ booking.slot.exam_date.date }}</div>
+                            <div class="booking-shift">
+                                <span class="slot-badge {% if booking.slot.shift == 'Morning' %}badge-morning{% else %}badge-evening{% endif %}">
+                                    {{ booking.slot.shift }}
+                                </span>
+                                {% if booking.auto_assigned %}
+                                    <span style="color:#f57f17; font-size:11px;">🤖 Auto</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <span class="cancel-btn">
+                            {% if booking.slot.booking_closed %}
+                                <button class="btn btn-closed" disabled>Closed</button>
+                            {% else %}
+                                <a href="{% url 'cancel_booking' booking.id %}">
+                                    <button class="btn btn-cancel">Cancel</button>
+                                </a>
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <div>No bookings yet.</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Unavailability Card -->
+        <div class="card">
+            <div class="card-header">🚫 My Unavailable Dates</div>
+
+            <!-- Add form -->
+            <form method="POST" action="{% url 'add_unavailability' %}" style="margin-bottom:12px;">
+                {% csrf_token %}
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <input type="date" name="date" required
+                        style="flex:1; padding:7px 10px; border:1.5px solid #e0e0e0;
+                                border-radius:6px; font-size:13px;">
+                    <button type="submit" class="btn btn-book" style="white-space:nowrap;">
+                        + Add
+                    </button>
+                </div>
+            </form>
+
+            <!-- List -->
+            {% for u in my_unavailability %}
+            <div class="booking-row">
+                <div class="booking-date">{{ u.date }}</div>
+                <a href="{% url 'remove_unavailability' u.id %}">
+                    <button class="btn btn-cancel">Remove</button>
+                </a>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <div class="empty-icon">✅</div>
+                <div>No unavailable dates marked.</div>
+            </div>
+            {% endfor %}
+        </div>
+ 
+    </div>
+ 
+    {% elif active_session and active_session.status == 'completed' %}
+    <div class="card">
+        <div class="no-session">
+            <div class="no-session-icon">✅</div>
+            <h4 style="color:#555; margin-bottom:8px;">Session Completed</h4>
+            <p style="margin-bottom:20px;">The exam session has ended. You can download your personal duty report.</p>
+            <a href="{% url 'download_my_report' %}" 
+            style="display:inline-block; padding:12px 28px;
+                    background:linear-gradient(135deg,#1a73e8,#0d47a1);
+                    color:white; border-radius:8px; font-size:15px;
+                    font-weight:600; text-decoration:none;">
+                📥 Download My Duty Report
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="no-session">
+            <div class="no-session-icon">🕐</div>
+            <h4 style="color:#555; margin-bottom:8px;">No Active Session</h4>
+            <p>There is no active exam session at the moment. Please check back later.</p>
+        </div>
+    </div>
+    {% endif %}
+ 
+</div>
+
+<script>
+/* ─────────────────────────────────────────────
+   URL helpers
+   FIX: Build dynamic URLs in JS by replacing the
+   placeholder ID (999999) with the real slot/booking ID.
+   This avoids the broken {% url 'book_slot' 0 %}.replace()
+   pattern that always produced /teachers/book/0/.
+───────────────────────────────────────────── */
+const BOOK_URL_TEMPLATE   = "{{ book_slot_url_template }}";
+const CANCEL_URL_TEMPLATE = "{{ cancel_booking_url_template }}";
+
+function bookUrl(slotId)    { return BOOK_URL_TEMPLATE.replace('999999', slotId); }
+function cancelUrl(bookingId) { return CANCEL_URL_TEMPLATE.replace('999999', bookingId); }
+
+
+/* ── Notification Dropdown ── */
+const dropdown = document.getElementById('notif-dropdown');
+const bellBadge = document.getElementById('bell-badge');
+ 
+function toggleNotifDropdown(e) {
+    e.stopPropagation();
+    dropdown.classList.toggle('open');
+}
+ 
+document.addEventListener('click', function(e) {
+    if (!dropdown.contains(e.target) && e.target.id !== 'bell-btn') {
+        dropdown.classList.remove('open');
+    }
+});
+ 
+function updateBadge() {
+    const count = document.querySelectorAll('#notif-list .notif-item').length;
+    if (count > 0) {
+        bellBadge.textContent = count;
+        bellBadge.classList.add('visible');
+    } else {
+        bellBadge.classList.remove('visible');
+        const list = document.getElementById('notif-list');
+        if (!list.querySelector('.notif-empty')) {
+            list.innerHTML = '<div class="notif-empty" id="notif-empty"><div class="notif-empty-icon">🔕</div><div>No new notifications</div></div>';
+        }
+    }
+}
+ 
+function markAllRead() {
+    fetch("{% url 'mark_notifications_read' %}", {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    }).then(() => {
+        document.querySelectorAll('#notif-list .notif-item').forEach(el => el.remove());
+        updateBadge();
+        dropdown.classList.remove('open');
+    });
+}
+ 
+function renderNotification(notif) {
+    const list = document.getElementById('notif-list');
+    if (list.querySelector(`[data-notif-id="${notif.id}"]`)) return;
+ 
+    const empty = list.querySelector('.notif-empty');
+    if (empty) empty.remove();
+ 
+    const icons  = { booked: '✅', cancelled: '❌', auto_assigned: '🤖' };
+    const titles = { booked: 'Slot Booked', cancelled: 'Slot Cancelled', auto_assigned: 'Auto Assigned' };
+ 
+    const item = document.createElement('div');
+    item.className = 'notif-item';
+    item.dataset.notifId = notif.id;
+    item.innerHTML = `
+        <div class="notif-icon icon-${notif.activity}">${icons[notif.activity] || '🔔'}</div>
+        <div class="notif-body">
+            <div class="notif-title">${titles[notif.activity] || notif.activity}</div>
+            <div class="notif-msg" title="${notif.message}">${notif.message}</div>
+            <div class="notif-time">${notif.created_at}</div>
+        </div>
+        <div class="unread-dot"></div>
+    `;
+    list.prepend(item);
+    updateBadge();
+
+    fetch("{% url 'mark_notifications_read' %}", {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    });
+}
+ 
+/* ── Countdown ── */
+function formatSeconds(seconds) {
+    if (seconds <= 0) return "Closed";
+    const d = Math.floor(seconds / 86400);
+    const h = Math.floor((seconds % 86400) / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${d}d ${h}h ${m}m ${s}s`;
+}
+
+/* Per-slot countdown timers */
+function initSlotCountdowns() {
+    document.querySelectorAll('.time-remaining[data-seconds]').forEach(el => {
+        let seconds = parseInt(el.dataset.seconds);
+        if (isNaN(seconds) || seconds <= 0) { el.textContent = ''; return; }
+        el.textContent = formatSeconds(seconds);
+        const iv = setInterval(() => {
+            seconds -= 1;
+            if (seconds <= 0) { el.textContent = ''; clearInterval(iv); }
+            else { el.textContent = formatSeconds(seconds); }
+        }, 1000);
+    });
+}
+
+function initGlobalCountdown() {
+    const firstEl = document.querySelector('.time-remaining[data-seconds]');
+    if (!firstEl) return;
+    let seconds = parseInt(firstEl.dataset.seconds);
+    if (isNaN(seconds)) return;
+    const globalEl = document.getElementById('global-countdown');
+    if (!globalEl) return;
+    globalEl.textContent = formatSeconds(seconds);
+    const interval = setInterval(() => {
+        seconds -= 1;
+        if (seconds <= 0) {
+            globalEl.textContent = "Closed";
+            clearInterval(interval);
+            pollDashboard();
+        } else {
+            globalEl.textContent = formatSeconds(seconds);
+        }
+    }, 1000);
+}
+ 
+/* ── Poll ── */
+function pollDashboard() {
+    fetch("{% url 'dashboard_data' %}")
+        .then(r => r.json())
+        .then(data => {
+            // Update duties count
+            document.getElementById('duties-count').textContent = data.duties;
+
+            // Update bookings count in stats
+            const bookingsCountEl = document.getElementById('bookings-count');
+            if (bookingsCountEl) bookingsCountEl.textContent = data.bookings.length;
+ 
+            // Push new notifications
+            data.notifications.forEach(notif => renderNotification(notif));
+ 
+            // Update slot rows
+            data.slots.forEach(slot => {
+                const row = document.querySelector(`[data-slot-id="${slot.id}"]`);
+                if (!row) return;
+
+                // Update seats left
+                row.querySelector('.seats-left').textContent = slot.seats_left;
+
+                // FIX: Use bookUrl() helper to build the correct URL with real slot ID.
+                // Old code did {% url 'book_slot' 0 %}.replace('0', slot.id) which
+                // called .replace() on the closing '>' — so the href was always /book/0/.
+                const actionBtn = row.querySelector('.action-btn');
+                if (slot.booking_closed) {
+                    actionBtn.innerHTML = `<button class="btn btn-closed" disabled>Closed</button>`;
+                } else if (slot.already_booked) {
+                    actionBtn.innerHTML = `<button class="btn btn-closed" disabled>✓ Booked</button>`;
+                } else if (slot.seats_left === 0) {
+                    actionBtn.innerHTML = `<button class="btn btn-closed" disabled>Full</button>`;
+                } else if (data.duties <= 0) {
+                    actionBtn.innerHTML = `<button class="btn btn-closed" disabled>No Duties</button>`;
+                } else {
+                    actionBtn.innerHTML = `<a href="${bookUrl(slot.id)}"><button class="btn btn-book">Book Slot</button></a>`;
+                }
+            });
+ 
+            // Update bookings panel
+            const bookingsContainer = document.getElementById('bookings-container');
+            if (data.bookings.length === 0) {
+                bookingsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div>No bookings yet.</div></div>';
+            } else {
+                data.bookings.forEach(booking => {
+                    const row = bookingsContainer.querySelector(`[data-booking-id="${booking.id}"]`);
+                    if (!row) return;
+
+                    // FIX: Use cancelUrl() helper for correct cancel URL too
+                    const cancelBtn = row.querySelector('.cancel-btn');
+                    if (booking.booking_closed) {
+                        cancelBtn.innerHTML = `<button class="btn btn-closed" disabled>Closed</button>`;
+                    } else {
+                        cancelBtn.innerHTML = `<a href="${cancelUrl(booking.id)}"><button class="btn btn-cancel">Cancel</button></a>`;
+                    }
+                });
+            }
+        });
+}
+ 
+initGlobalCountdown();
+initSlotCountdowns();
+setInterval(pollDashboard, 5000);
+</script>
+ 
+{% endblock %}

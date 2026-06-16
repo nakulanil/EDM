@@ -1,0 +1,289 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Duty System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+        .navbar-brand {
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+        }
+        .btn-login {
+            padding: 8px 20px;
+            background: white;
+            color: #1a73e8;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .btn-login:hover { opacity: 0.9; }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            color: white;
+            text-align: center;
+            padding: 80px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%);
+        }
+        .hero h1 {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .hero p {
+            font-size: 17px;
+            opacity: 0.88;
+            max-width: 520px;
+            margin: 0 auto 30px;
+            line-height: 1.6;
+            position: relative;
+        }
+        .btn-hero {
+            display: inline-block;
+            padding: 14px 35px;
+            background: white;
+            color: #1a73e8;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+        .btn-hero:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            background: white;
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+        }
+        .stat-item {
+            flex: 1;
+            max-width: 200px;
+            text-align: center;
+            padding: 20px;
+            border-right: 1px solid #f0f0f0;
+        }
+        .stat-item:last-child { border-right: none; }
+        .stat-item .num {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1a73e8;
+        }
+        .stat-item .label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 3px;
+        }
+
+        /* Features */
+        .features {
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .feature-card {
+            background: white;
+            border-radius: 14px;
+            padding: 28px 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .feature-icon {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+        .feature-card h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+        .feature-card p {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        /* CTA Section */
+        .cta {
+            text-align: center;
+            padding: 50px 20px;
+            background: white;
+            margin: 0 20px 40px;
+            border-radius: 16px;
+            max-width: 600px;
+            margin: 0 auto 50px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+        }
+        .cta h3 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+        }
+        .cta p {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 20px;
+        }
+        .btn-cta {
+            display: inline-block;
+            padding: 13px 35px;
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            color: white;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .btn-cta:hover { opacity: 0.9; }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .features { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 28px; }
+            .stats-bar { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <a class="navbar-brand" href="#">📋 Exam Duty System</a>
+    <a href="{% url 'login' %}" class="btn-login">🔐 Teacher Login</a>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+    <h1>Smart Exam Duty Management</h1>
+    <p>A modern system for managing exam duty slots for teachers — book, track and stay updated in real time.</p>
+    <a href="{% url 'login' %}" class="btn-hero">🔐 Login to Dashboard →</a>
+</div>
+
+<!-- Stats Bar -->
+<div class="stats-bar">
+    <div class="stat-item">
+        <div class="num">⚡</div>
+        <div class="label">Real-time Updates</div>
+    </div>
+    <div class="stat-item">
+        <div class="num">🤖</div>
+        <div class="label">Auto Assignment</div>
+    </div>
+    <div class="stat-item">
+        <div class="num">🔔</div>
+        <div class="label">Instant Notifications</div>
+    </div>
+    <div class="stat-item">
+        <div class="num">📧</div>
+        <div class="label">Email OTP Security</div>
+    </div>
+</div>
+
+<!-- Features -->
+<div class="features">
+    <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <h4>Easy Slot Booking</h4>
+        <p>Browse available exam slots and book your duty with a single click. Real-time seat availability shown.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h4>Auto Assignment</h4>
+        <p>Unbooked duties are automatically assigned after the deadline ensuring full coverage every time.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">⚖️</div>
+        <h4>Fair Distribution</h4>
+        <p>Duties are distributed fairly among all teachers with relaxation support for eligible staff.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">🔔</div>
+        <h4>Live Notifications</h4>
+        <p>Get instant notifications for bookings, cancellations and auto-assignments right on your dashboard.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">⏳</div>
+        <h4>Deadline Tracking</h4>
+        <p>Live countdown timer shows exactly how much time is left to book your exam duty slots.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">🔐</div>
+        <h4>Secure Access</h4>
+        <p>OTP-based password reset via email ensures your account stays safe and accessible.</p>
+    </div>
+</div>
+
+<!-- CTA -->
+<div class="cta">
+    <h3>Ready to manage your duties?</h3>
+    <p>Log in to your teacher account and get started.</p>
+    <a href="{% url 'login' %}" class="btn-cta">Get Started →</a>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    © 2026 Exam Duty System — Deen Dayal Upadhyay College
+</div>
+
+</body>
+</html>

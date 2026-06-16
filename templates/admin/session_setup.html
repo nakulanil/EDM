@@ -1,0 +1,94 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Setup Session{% endblock %}
+
+{% block content %}
+
+<h1>📂 Setup Session: {{ session.name }}</h1>
+
+<!-- Instructions -->
+<div style="background:#f8f9fa; padding:15px; border-radius:6px; margin-bottom:20px;">
+    <p><strong>Upload CSV with following columns:</strong></p>
+    <code>exam_name,exam_date,total_students,morning_students,evening_students</code>
+
+    <p style="margin-top:10px;"><strong>Example:</strong></p>
+    <pre style="background:#fff; padding:10px; border-radius:4px;">
+exam_name,exam_date,total_students,morning_students,evening_students
+Maths,2026-04-10,200,120,80
+Physics,2026-04-10,80,0,80
+Chemistry,2026-04-11,150,150,0
+    </pre>
+
+    <p style="color:#888; font-size:13px; margin-top:8px;">
+        ℹ️ If <code>morning_students</code> is 0 → no morning slot created.<br>
+        ℹ️ If <code>evening_students</code> is 0 → no evening slot created.<br>
+        ℹ️ Invigilator positions are auto-calculated as <strong>ceil(students / 50) × 2</strong> per shift.
+    </p>
+</div>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- CSV Upload -->
+    <div style="margin-bottom:20px;">
+        <label><strong>CSV File:</strong></label><br>
+        <input type="file" name="csv_file" accept=".csv" required style="margin-top:5px;">
+    </div>
+
+    <!-- Booking Deadline -->
+    <div style="margin-bottom:15px; max-width:400px;">
+        <label><strong>Booking Deadline:</strong></label><br>
+        <input type="datetime-local" name="booking_deadline" required
+               style="width:100%; padding:6px; margin-top:5px;">
+    </div>
+
+    <!-- Buffer -->
+    <div style="margin-bottom:20px; max-width:200px;">
+        <label><strong>Extra Buffer Slots:</strong></label><br>
+        <input type="number" name="buffer" value="0" min="0"
+               style="width:100%; padding:6px; margin-top:5px;">
+        <small style="color:#666;">
+            Extra invigilator slots added per shift.
+        </small>
+    </div>
+
+    <!-- TIME SETTINGS -->
+    <h3>⏰ Shift Timings</h3>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; max-width:500px; margin-bottom:20px;">
+
+        <div>
+            <label><strong>Morning Start:</strong></label><br>
+            <input type="time" name="morning_start" value="09:00" required
+                   style="width:100%; padding:6px; margin-top:5px;">
+        </div>
+
+        <div>
+            <label><strong>Morning End:</strong></label><br>
+            <input type="time" name="morning_end" value="12:00" required
+                   style="width:100%; padding:6px; margin-top:5px;">
+        </div>
+
+        <div>
+            <label><strong>Evening Start:</strong></label><br>
+            <input type="time" name="evening_start" value="15:00" required
+                   style="width:100%; padding:6px; margin-top:5px;">
+        </div>
+
+        <div>
+            <label><strong>Evening End:</strong></label><br>
+            <input type="time" name="evening_end" value="18:00" required
+                   style="width:100%; padding:6px; margin-top:5px;">
+        </div>
+
+    </div>
+
+    <!-- Submit -->
+    <div>
+        <input type="submit" value="🚀 Create Session"
+               class="default"
+               style="padding:10px 20px; font-size:15px;">
+    </div>
+
+</form>
+
+{% endblock %}
